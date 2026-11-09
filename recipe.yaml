@@ -1,0 +1,31 @@
+# E2E test of the migrated image: real LoRA RL on hard math, one 4-GPU rollout node on Daytona, a 4-GPU trainer on Modal.
+name: e2e-q3-8b-dapo
+model: {preset: qwen3-8b, backend: megatron}
+cluster:
+  gpu: H200
+  nodes: 1
+  train_gpus: 4
+  cpu: 32
+  memory_gib: 192
+  placement: split
+  timeout_hours: 4
+  engine: {gpus: 4, cpu: 16, memory_gib: 192, elastic: true, idle_minutes: 10, timeout_hours: 4}
+parallel: {tp: 2}
+rollout: {gpus_per_engine: 1}
+lora: {rank: 16, alpha: 32}
+taskset: {prompts: /e2e/prompts.jsonl, harness: single-turn}
+algorithm:
+  mode: fully_async
+  num_rollout: 100
+  rollout_batch_size: 16
+  n_samples: 8
+  max_response_len: 4096
+  max_seq_len: 8192
+  lr: 2.0e-5
+  group_filter: nonzero_std  # drop groups whose 8 samples all scored the same: no GRPO signal
+checkpoint: {save_interval: 20, keep: 1, save_optimizer: true, save_rollout_data: true}
+# two batches in flight: whether the engines idled at one (the Modal run held about 13 requests per engine)
+async: {max_concurrent_samples: 256}
+tracking: {wandb_project: miles-e2e, wandb_entity: mobiuslab}
+# Qwen3-8B's vocab (151936) pads to 152064 at TP 2 (Megatron: 128 x TP), and that size breaks TP scatter of the HF weights
+extra_args: ["--make-vocab-size-divisible-by", "1", "--check-lora-weight-equal"]

@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+prompts.jsonl
+logs/
+site.json
+.venv*/

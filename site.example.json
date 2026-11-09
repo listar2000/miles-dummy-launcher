@@ -1,0 +1,11 @@
+{
+ "gcp_project": "<gcp_project>",
+ "gcp_project_number": "<gcp_project_number>",
+ "bucket": "<bucket>",
+ "gcs_folder": "miles-e2e",
+ "gcp_pool": "miles-rl-modal",
+ "gcp_provider": "modal",
+ "gcp_account": "<gcp_account>",
+ "wandb_base_url": "<wandb_base_url>",
+ "wandb_project": "<entity>/<project>"
+}
